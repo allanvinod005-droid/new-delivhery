@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A Special Delivery For Shruthi</title>
+    <style>
+        :root {
+            --midnight-blue: #0a0f2e;
+            --soft-white: rgba(255, 255, 255, 0.85);
+            --glow-color: rgba(255, 255, 255, 0.5);
+            --warm-glow-color: rgba(255, 220, 180, 0);
+            --progress: 0deg;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html, body {
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: var(--midnight-blue);
+            color: var(--soft-white);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            transition: background-color 2.5s ease-in-out;
+        }
+
+        body.warming-up {
+            background-color: #1a1f3e;
+        }
+        
+        .main-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: transform 3s cubic-bezier(0.25, 0.1, 0.25, 1);
+        }
+
+        .main-container.zoomed {
+            transform: scale(1.1);
+        }
+
+        .scene {
+            position: absolute;
+            width: 90%;
+            max-width: 500px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2rem;
+            opacity: 0;
+            transform: translateY(20px);
+            pointer-events: none;
+            transition: opacity 1.5s ease-out, transform 1.5s ease-out;
+        }
+
+        .scene.active {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+
+        .glowing-text {
+            text-shadow: 0 0 8px var(--glow-color), 0 0 16px var(--glow-color);
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 2rem 2.5rem;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        
+        .card h1 {
+            font-size: 1.8rem;
+            font-weight: 500;
+        }
+
+        .card p {
+            font-size: 1.1rem;
+            font-weight: 300;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .subtitle {
+            font-size: 1rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .button {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            color: var(--soft-white);
+            padding: 0.8rem 1.5rem;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+        }
+
+        .button:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.7);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+        }
+
+        #holdButton {
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+            font-weight: 600;
+            position: relative;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        #holdButton::before {
+            content: '';
+            position: absolute;
+            top: -2px; left: -2px;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 2px solid transparent;
+            background: conic-gradient(from 0deg, white var(--progress), transparent var(--progress));
+            -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 6px), #000 0);
+            mask: radial-gradient(farthest-side, transparent calc(100% - 6px), #000 0);
+            transition: background 0.1s linear;
+        }
+        
+        .pulsing {
+            animation: pulse 1.2s infinite cubic-bezier(0.455, 0.03, 0.515, 0.955);
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 0 20px rgba(255, 255, 255, 0.2); }
+            50% { transform: scale(1.05); box-shadow: 0 0 40px rgba(255, 255, 255, 0.4); }
+            100% { transform: scale(1); box-shadow: 0 0 20px rgba(255, 255, 255, 0.2); }
+        }
+
+        #hold-text-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        #hold-status {
+            min-height: 24px; /* prevent layout shift */
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.8);
+            transition: opacity 0.5s ease-in-out;
+        }
+
+        #hug-delivered-message,
+        #hug-delivered-sub-message1,
+        #hug-delivered-sub-message2,
+        #final-message-container h2,
+        #final-message-container p {
+            opacity: 0;
+            transition: opacity 2s ease-in-out;
+        }
+
+        .hearts-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .heart {
+            position: absolute;
+            background-color: white;
+            opacity: 0;
+            filter: drop-shadow(0 0 5px white) blur(1px);
+            animation: float 20s infinite linear;
+            transform-origin: center;
+        }
+
+        .heart::before,
+        .heart::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-color: white;
+            border-radius: 50%;
+        }
+
+        .heart::before {
+            top: -50%;
+            left: 0;
+        }
+
+        .heart::after {
+            top: 0;
+            left: 50%;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(110vh) rotate(0deg) scale(1);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.6;
+            }
+            90% {
+                opacity: 0.6;
+            }
+            100% {
+                transform: translateY(-10vh) rotate(720deg) scale(0.8);
+                opacity: 0;
+            }
+        }
+        
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+            opacity: 0;
+            transition: opacity 3s ease-in-out;
+        }
+        
+        #vignette-overlay {
+            background: radial-gradient(circle, transparent 50%, black 120%);
+        }
+        
+        #warmth-overlay {
+            background: radial-gradient(circle, var(--warm-glow-color) 0%, transparent 70%);
+        }
+
+        #heart-burst-container {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+        }
+
+        .burst-heart {
+            position: absolute;
+            background-color: white;
+            filter: drop-shadow(0 0 10px white) blur(1px);
+            transform: scale(0);
+            opacity: 1;
+            animation: burst 1.5s cubic-bezier(0.12, 0.69, 0.38, 0.99) forwards;
+        }
+
+        @keyframes burst {
+            0% {
+                transform: scale(0) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(3) rotate(360deg);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="hearts-container" id="hearts-container"></div>
+    <div class="overlay" id="warmth-overlay"></div>
+    <div class="overlay" id="vignette-overlay"></div>
+    
+    <div class="main-container" id="main-container">
+        <!-- ACT 1: DELIVERY ARRIVAL -->
+        <div class="scene active" id="scene-1">
+            <div class="card glowing-text">
+                <h1>📦 A Special Delivery</h1>
+                <p>From: Dubai</p>
+                <p>For: Shruthi 🤍</p>
+            </div>
+            <p class="subtitle">This parcel contains something simple... but important.</p>
+            <button class="button" id="openButton">Open It</button>
+        </div>
+
+        <!-- ACT 2 & 3: HOLD TO RECEIVE -->
+        <div class="scene" id="scene-2">
+            <div id="hold-text-container" class="glowing-text">
+                <h2 style="font-size: 1.8rem; font-weight: 400;">It's a hug.</h2>
+                <p id="hold-status">Hold to receive.</p>
+            </div>
+            <button class="button" id="holdButton">HOLD 🤍</button>
+            <p class="subtitle" id="dont-let-go">Don't let go.</p>
+        </div>
+
+        <!-- ACT 4 & 5: THE HUG & FINAL MESSAGE -->
+        <div class="scene" id="scene-3">
+             <div id="heart-burst-container"></div>
+             <div style="display: flex; flex-direction: column; gap: 2.5rem;">
+                <h2 id="hug-delivered-message" class="glowing-text" style="font-size: 2rem; font-weight: 500;">Hug delivered 🤍</h2>
+                <div style="display: flex; flex-direction: column; gap: 1rem; font-size: 1.2rem; font-weight: 300;">
+                    <p id="hug-delivered-sub-message1">If I were there right now, I’d hold you a little longer.</p>
+                    <p id="hug-delivered-sub-message2">But until then... this will have to do.</p>
+                </div>
+             </div>
+             <div id="final-message-container" style="display: flex; flex-direction: column; gap: 1.5rem;">
+                <h2 class="glowing-text" style="font-size: 1.8rem; font-weight: 400;">Happy Hug Day Shruthi 🤍</h2>
+                <p class="subtitle">From Dubai. With all my warmth.</p>
+                <button class="button" id="hugAgainButton">Hug Me Again</button>
+             </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const scenes = {
+                scene1: document.getElementById('scene-1'),
+                scene2: document.getElementById('scene-2'),
+                scene3: document.getElementById('scene-3'),
+            };
+
+            const buttons = {
+                open: document.getElementById('openButton'),
+                hold: document.getElementById('holdButton'),
+                hugAgain: document.getElementById('hugAgainButton'),
+            };
+
+            const elements = {
+                body: document.body,
+                mainContainer: document.getElementById('main-container'),
+                heartsContainer: document.getElementById('hearts-container'),
+                holdStatus: document.getElementById('hold-status'),
+                dontLetGo: document.getElementById('dont-let-go'),
+                warmthOverlay: document.getElementById('warmth-overlay'),
+                vignetteOverlay: document.getElementById('vignette-overlay'),
+                heartBurstContainer: document.getElementById('heart-burst-container'),
+            };
+            
+            const finalMessages = {
+                hugDelivered: document.getElementById('hug-delivered-message'),
+                subMessage1: document.getElementById('hug-delivered-sub-message1'),
+                subMessage2: document.getElementById('hug-delivered-sub-message2'),
+                finalTitle: document.querySelector('#final-message-container h2'),
+                finalSubtitle: document.querySelector('#final-message-container p'),
+            };
+
+            const HOLD_DURATION = 5000;
+            const HOLD_INTERVAL = 1000;
+            const holdStatusTexts = ["Coming closer...", "Closing the distance...", "Right here...", "Stay with me..."];
+
+            let holdTimeout = null;
+            let holdInterval = null;
+            let holdStartTime = 0;
+            let currentScene = 'scene1';
+
+            function switchScene(targetSceneId) {
+                if (scenes[currentScene]) {
+                    scenes[currentScene].classList.remove('active');
+                }
+                setTimeout(() => {
+                    if (scenes[targetSceneId]) {
+                        scenes[targetSceneId].classList.add('active');
+                        currentScene = targetSceneId;
+                    }
+                }, 1000); // Delay to allow fade out
+            }
+
+            function createHearts(count) {
+                elements.heartsContainer.innerHTML = '';
+                for (let i = 0; i < count; i++) {
+                    const heart = document.createElement('div');
+                    heart.classList.add('heart');
+                    
+                    const size = Math.random() * 20 + 5;
+                    heart.style.width = `${size}px`;
+                    heart.style.height = `${size}px`;
+                    heart.style.left = `${Math.random() * 100}%`;
+                    heart.style.animationDuration = `${Math.random() * 15 + 15}s`;
+                    heart.style.animationDelay = `${Math.random() * 10}s`;
+
+                    elements.heartsContainer.appendChild(heart);
+                }
+            }
+
+            function createHeartBurst() {
+                elements.heartBurstContainer.innerHTML = '';
+                for (let i = 0; i < 15; i++) {
+                    const burstHeart = document.createElement('div');
+                    burstHeart.classList.add('heart', 'burst-heart');
+                    const size = Math.random() * 15 + 5;
+                    burstHeart.style.width = `${size}px`;
+                    burstHeart.style.height = `${size}px`;
+                    const angle = Math.random() * 360;
+                    const distance = Math.random() * 100 + 50;
+                    burstHeart.style.setProperty('--tx', `${Math.cos(angle * Math.PI / 180) * distance}px`);
+                    burstHeart.style.setProperty('--ty', `${Math.sin(angle * Math.PI / 180) * distance}px`);
+                    burstHeart.style.animationDelay = `${Math.random() * 0.2}s`;
+                    elements.heartBurstContainer.appendChild(burstHeart);
+                }
+            }
+            
+            function resetHoldUI() {
+                elements.holdStatus.textContent = "Hold to receive.";
+                elements.dontLetGo.style.opacity = '1';
+                buttons.hold.style.setProperty('--progress', '0deg');
+                buttons.hold.classList.remove('pulsing');
+                elements.body.classList.remove('warming-up');
+            }
+
+            function startHold() {
+                holdStartTime = Date.now();
+                buttons.hold.classList.add('pulsing');
+                elements.body.classList.add('warming-up');
+                
+                holdTimeout = setTimeout(onHoldSuccess, HOLD_DURATION);
+
+                let step = 0;
+                elements.holdStatus.textContent = holdStatusTexts[step];
+                elements.dontLetGo.style.opacity = '0';
+                
+                holdInterval = setInterval(() => {
+                    const elapsedTime = Date.now() - holdStartTime;
+                    const progress = Math.min(elapsedTime / HOLD_DURATION, 1);
+                    buttons.hold.style.setProperty('--progress', `${progress * 360}deg`);
+
+                    step++;
+                    if (step < holdStatusTexts.length) {
+                        elements.holdStatus.textContent = holdStatusTexts[step];
+                    }
+                }, HOLD_INTERVAL);
+            }
+
+            function endHold(event) {
+                event.preventDefault(); // Prevent context menu on long press
+                clearTimeout(holdTimeout);
+                clearInterval(holdInterval);
+
+                const holdTime = Date.now() - holdStartTime;
+
+                if (holdTime < HOLD_DURATION) {
+                    elements.holdStatus.textContent = "Hug slipped away… try again 🤍";
+                    setTimeout(resetHoldUI, 2000);
+                }
+                 resetHoldUI();
+            }
+
+            function onHoldSuccess() {
+                clearInterval(holdInterval);
+                
+                // Trigger hug moment effects
+                elements.warmthOverlay.style.opacity = '1';
+                elements.vignetteOverlay.style.opacity = '1';
+                elements.mainContainer.classList.add('zoomed');
+                createHeartBurst();
+
+                switchScene('scene3');
+
+                // Staggered final messages
+                setTimeout(() => finalMessages.hugDelivered.style.opacity = '1', 500);
+                setTimeout(() => finalMessages.subMessage1.style.opacity = '1', 2500);
+                setTimeout(() => finalMessages.subMessage2.style.opacity = '1', 4500);
+                setTimeout(() => {
+                    finalMessages.finalTitle.style.opacity = '1';
+                    finalMessages.finalSubtitle.style.opacity = '1';
+                    buttons.hugAgain.style.opacity = '1';
+                    buttons.hugAgain.style.pointerEvents = 'auto';
+                }, 7500);
+            }
+
+            function resetExperience() {
+                Object.values(finalMessages).forEach(el => el.style.opacity = '0');
+                buttons.hugAgain.style.opacity = '0';
+                buttons.hugAgain.style.pointerEvents = 'none';
+                
+                elements.warmthOverlay.style.opacity = '0';
+                elements.vignetteOverlay.style.opacity = '0';
+                elements.mainContainer.classList.remove('zoomed');
+
+                resetHoldUI();
+                switchScene('scene1');
+            }
+
+            // Event Listeners
+            buttons.open.addEventListener('click', () => switchScene('scene2'));
+            buttons.hugAgain.addEventListener('click', resetExperience);
+
+            buttons.hold.addEventListener('mousedown', startHold);
+            buttons.hold.addEventListener('mouseup', endHold);
+            buttons.hold.addEventListener('mouseleave', endHold);
+
+            buttons.hold.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                startHold();
+            }, { passive: false });
+            buttons.hold.addEventListener('touchend', endHold);
+            buttons.hold.addEventListener('touchcancel', endHold);
+
+            // Initial setup
+            createHearts(25);
+            buttons.hugAgain.style.opacity = '0'; // Ensure it's hidden on init
+            buttons.hugAgain.style.pointerEvents = 'none';
+
+        });
+    </script>
+</body>
+</html>
